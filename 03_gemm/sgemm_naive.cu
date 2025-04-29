@@ -34,7 +34,8 @@ __global__ void naiveSgemm(
     int m = blockIdx.y * blockDim.y + threadIdx.y;
     if (m < M && n < N) {
         float psum = 0.0;
-        #pragma unroll
+        #pragma unroll 
+        //pragma unroll 是一个编译器指令，用于控制循环展开（Loop Unrolling）的优化行为。循环展开是一种通过减少循环控制指令的开销（如分支判断、计数器增减等）来提高程序执行速度的技术。
         for (int k = 0; k < K; k++) {
             psum += a[OFFSET(m, k, K)] * b[OFFSET(k, n, N)];
         }
@@ -76,7 +77,7 @@ int main(void) {
         double avg_sec = total_sec / outer_repeat;
         double avg_Gflops = ((double)M) * N * K * 2 / 1024 / 1024 / 1024 / avg_sec;
 
-        printf("M N K = %6d %6d %6d, Time = %12.8lf %12.8lf %12.8lf s, AVG Performance = %10.4lf Gflops\n", M, N, K, min_sec, avg_sec, max_sec, avg_Gflops);
+        printf("M N K = %6d %6d %6d, Time = min %12.8lf, avg %12.8lf, max %12.8lf s, AVG Performance = %10.4lf Gflops\n", M, N, K, min_sec, avg_sec, max_sec, avg_Gflops);
     }
     return 0;
 }
@@ -153,8 +154,9 @@ float testPerformance(
     cudaEventCreate(&start);
     cudaEventCreate(&end);
     cudaEventRecord(start);
-    for (int i = 0; i < repeat; i++)
+    for (int i = 0; i < repeat; i++) {
         gpuSgemm<<<gridDim, blockDim>>>(d_a, d_b, d_c, M, N, K);
+    }
     cudaEventRecord(end);
     cudaEventSynchronize(end);
 
